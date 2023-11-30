@@ -1,7 +1,9 @@
 import { createRef, useEffect, useRef, useState } from "react";
 
+const INPUT_QUANTITY = 6;
+
 const createInputList = (
-  inputList = 6,
+  inputList = INPUT_QUANTITY,
   changeCodeNumber,
   handleKeyDown,
   codeNumber,
@@ -23,10 +25,11 @@ const createInputList = (
     );
   });
 };
-
 const App = () => {
   const [formData, setFormData] = useState(["", "", "", "", "", ""]);
-  const focus = useRef(Array.from({ length: 6 }).map(() => createRef()));
+  const focus = useRef(
+    Array.from({ length: INPUT_QUANTITY }).map(() => createRef())
+  );
 
   useEffect(() => {
     if (focus.current[0]) {
@@ -72,7 +75,13 @@ const App = () => {
       </div>
       <form>
         <div id="otp-container">
-          {createInputList(6, handleChangeForm, handleKeyDown, formData, focus)}
+          {createInputList(
+            INPUT_QUANTITY,
+            handleChangeForm,
+            handleKeyDown,
+            formData,
+            focus
+          )}
         </div>
         <button type="submit">Submit</button>
       </form>
