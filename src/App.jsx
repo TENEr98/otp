@@ -2,14 +2,15 @@ import { createRef, useEffect, useRef, useState } from "react";
 
 const INPUT_QUANTITY = 6;
 
+const emptyArray = Array.from({ length: INPUT_QUANTITY });
+
 const createInputList = (
-  inputList = INPUT_QUANTITY,
   changeCodeNumber,
   handleKeyDown,
   codeNumber,
   focus
 ) => {
-  return Array.from({ length: inputList }).map((_, index) => {
+  return emptyArray.map((_, index) => {
     return (
       <input
         key={index}
@@ -25,11 +26,10 @@ const createInputList = (
     );
   });
 };
+
 const App = () => {
-  const [formData, setFormData] = useState(["", "", "", "", "", ""]);
-  const focus = useRef(
-    Array.from({ length: INPUT_QUANTITY }).map(() => createRef())
-  );
+  const [formData, setFormData] = useState(emptyArray.fill(""));
+  const focus = useRef(emptyArray.map(() => createRef()));
 
   useEffect(() => {
     if (focus.current[0]) {
@@ -46,24 +46,41 @@ const App = () => {
   };
 
   const handleKeyDown = (event, index) => {
-    if (index <= 0) return;
-    handleSetForm(index);
-    if (formData[index].length !== 0) return;
     switch (event.code) {
       case "Backspace": {
-        return handleFocusInput(index - 1);
+        handleSetForm(index);
+        if (index <= 0) return;
+        handleFocusInput(index - 1);
+        break;
       }
       case "Delete": {
-        return handleFocusInput(index + 1);
+        handleSetForm(index);
+        if (index >= INPUT_QUANTITY - 1) return;
+        handleFocusInput(index + 1);
+        break;
+      }
+      case "ArrowLeft": {
+        if (index <= 0) return;
+        handleFocusInput(index - 1);
+        break;
+      }
+      case "ArrowRight": {
+        if (index >= INPUT_QUANTITY - 1) return;
+        handleFocusInput(index + 1);
+        break;
       }
     }
   };
 
   const handleChangeForm = (event, index) => {
+    if (event.nativeEvent.inputType === "deleteContentBackward") return;
     let temp = event.target.value;
     temp = temp.replace(/[^\d]/g, "").slice(0, 1);
     handleSetForm(index, temp);
-    if (index < 5 && event.nativeEvent.inputType === "insertText")
+    if (
+      index < INPUT_QUANTITY - 1 &&
+      event.nativeEvent.inputType === "insertText"
+    )
       handleFocusInput(index + 1);
   };
 
@@ -75,13 +92,7 @@ const App = () => {
       </div>
       <form>
         <div id="otp-container">
-          {createInputList(
-            INPUT_QUANTITY,
-            handleChangeForm,
-            handleKeyDown,
-            formData,
-            focus
-          )}
+          {createInputList(handleChangeForm, handleKeyDown, formData, focus)}
         </div>
         <button type="submit">Submit</button>
       </form>
