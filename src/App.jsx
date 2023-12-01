@@ -1,4 +1,5 @@
 import { createRef, useEffect, useRef, useState } from "react";
+import { createRandomNumbers } from "./utils/randomize";
 
 const INPUT_QUANTITY = 6;
 
@@ -7,6 +8,7 @@ const emptyArray = Array.from({ length: INPUT_QUANTITY });
 const createInputList = (
   changeCodeNumber,
   handleKeyDown,
+  pasteNumbers,
   codeNumber,
   focus
 ) => {
@@ -18,6 +20,7 @@ const createInputList = (
         value={codeNumber[index]}
         onChange={(event) => changeCodeNumber(event, index)}
         onKeyDown={(event) => handleKeyDown(event, index)}
+        onPaste={pasteNumbers}
         ref={focus.current[index]}
         className="otp-number"
         type="number"
@@ -29,13 +32,26 @@ const createInputList = (
 
 const App = () => {
   const [formData, setFormData] = useState(emptyArray.fill(""));
+  const [isDisabled, setDisabled] = useState(true);
   const focus = useRef(emptyArray.map(() => createRef()));
+
+  useEffect(() => {
+    window.paste = () => {
+      const numberList = createRandomNumbers(INPUT_QUANTITY);
+      setFormData(numberList);
+    };
+  }, []);
 
   useEffect(() => {
     if (focus.current[0]) {
       focus.current[0].current.focus();
     }
   }, []);
+
+  useEffect(() => {
+    const isFilled = formData.every((item) => item.length == 1);
+    if (isFilled) setDisabled(false);
+  }, [formData]);
 
   const handleFocusInput = (index) => focus.current[index].current.focus();
 
@@ -84,6 +100,21 @@ const App = () => {
       handleFocusInput(index + 1);
   };
 
+  const handlePasteNumbers = (event) => {
+    const clipboardData = event.clipboardData.getData("text");
+    if (clipboardData.length !== INPUT_QUANTITY) return;
+    const isNumberList = clipboardData
+      .split("")
+      .map((item) => Number(item))
+      .some(
+        (number) => typeof number === "number" && /\d{1}/.test(String(number))
+      );
+
+    if (!isNumberList) return;
+    setFormData(clipboardData.split(""));
+    handleFocusInput(INPUT_QUANTITY - 1);
+  };
+
   return (
     <div className="wrapper">
       <div className="heading">
@@ -92,9 +123,17 @@ const App = () => {
       </div>
       <form>
         <div id="otp-container">
-          {createInputList(handleChangeForm, handleKeyDown, formData, focus)}
+          {createInputList(
+            handleChangeForm,
+            handleKeyDown,
+            handlePasteNumbers,
+            formData,
+            focus
+          )}
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={isDisabled}>
+          Submit
+        </button>
       </form>
     </div>
   );
