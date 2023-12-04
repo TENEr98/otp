@@ -23,7 +23,9 @@ const createInputList = (
         onPaste={pasteNumbers}
         ref={focus.current[index]}
         className="otp-number"
-        type="number"
+        pattern="\d*"
+        maxLength="1"
+        type="tel"
         autoComplete="off"
       />
     );
@@ -91,7 +93,8 @@ const App = () => {
   const handleChangeForm = (event, index) => {
     if (event.nativeEvent.inputType === "deleteContentBackward") return;
     let temp = event.target.value;
-    temp = temp.replace(/\D/g, "").slice(0, 1);
+    temp = temp.replace(/[^\d]/g, "").slice(0, 1);
+    if (!temp.length) return;
     handleSetForm(index, temp);
     if (
       index < INPUT_QUANTITY - 1 &&
@@ -103,12 +106,7 @@ const App = () => {
   const handlePasteNumbers = (event) => {
     const clipboardData = event.clipboardData.getData("text");
     if (clipboardData.length !== INPUT_QUANTITY) return;
-    const isNumberList = clipboardData
-      .split("")
-      .map((item) => Number(item))
-      .some(
-        (number) => typeof number === "number" && /\d{1}/.test(String(number))
-      );
+    const isNumberList = /^\d+$/.test(clipboardData);
 
     if (!isNumberList) return;
     setFormData(clipboardData.split(""));
