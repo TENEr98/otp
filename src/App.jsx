@@ -91,7 +91,7 @@ const App = () => {
   const handleChangeForm = (event, index) => {
     if (event.nativeEvent.inputType === "deleteContentBackward") return;
     let temp = event.target.value;
-    temp = temp.replace(/[^\d]/g, "").slice(0, 1);
+    temp = temp.replace(/\D/g, "").slice(0, 1);
     handleSetForm(index, temp);
     if (
       index < INPUT_QUANTITY - 1 &&
